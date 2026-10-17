@@ -1,0 +1,55 @@
+{
+  "id": "b27db114-2919-44c5-9d14-0ebf430501d9",
+  "prevId": "36a164ce-fd71-433a-a68b-020e3c82b985",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sessions": {
+      "name": "sessions",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "uuid", "primaryKey": true, "notNull": true, "unique": false, "default": "gen_random_uuid()" },
+        "user_id": { "name": "user_id", "type": "uuid", "primaryKey": false, "notNull": true, "unique": false },
+        "expires_at": { "name": "expires_at", "type": "timestamp with time zone", "primaryKey": false, "notNull": true, "unique": false }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sessions_user_id_users_id_fk": { "name": "sessions_user_id_users_id_fk", "tableFrom": "sessions", "tableTo": "users", "schemaTo": "public", "columnsFrom": ["user_id"], "columnsTo": ["id"], "onDelete": "cascade", "onUpdate": "no action" }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "uuid", "primaryKey": true, "notNull": true, "unique": false, "default": "gen_random_uuid()" },
+        "email": { "name": "email", "type": "text", "primaryKey": false, "notNull": true, "unique": false },
+        "password_hash": { "name": "password_hash", "type": "text", "primaryKey": false, "notNull": true, "unique": false },
+        "role": { "name": "role", "type": "user_role", "primaryKey": false, "notNull": true, "unique": false, "default": "'student'" },
+        "status": { "name": "status", "type": "user_status", "primaryKey": false, "notNull": true, "unique": false, "default": "'active'" },
+        "created_at": { "name": "created_at", "type": "timestamp with time zone", "primaryKey": false, "notNull": true, "unique": false, "default": "now()" }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": { "users_email_unique": { "name": "users_email_unique", "nullsNotDistinct": false, "columns": ["email"] } },
+      "policies": {},
+      "checkConstraints": { "users_email_lowercase_check": { "name": "users_email_lowercase_check", "value": "\"users\".\"email\" = lower(\"users\".\"email\")" } },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.user_role": { "name": "user_role", "schema": "", "values": ["student", "staff", "admin"] },
+    "public.user_status": { "name": "user_status", "schema": "", "values": ["active", "disabled"] }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": { "columns": {}, "schemas": {}, "tables": {} }
+}

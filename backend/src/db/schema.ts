@@ -27,3 +27,11 @@ export const users = pgTable(
     check('users_email_lowercase_check', sql`${table.email} = lower(${table.email})`),
   ],
 )
+
+export const sessions = pgTable('sessions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+})

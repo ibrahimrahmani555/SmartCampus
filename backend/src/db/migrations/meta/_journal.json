@@ -8,6 +8,13 @@
       "when": 1792270172985,
       "tag": "0000_square_malcolm_colcord",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792270172986,
+      "tag": "0001_add_sessions",
+      "breakpoints": true
     }
   ]
 }
