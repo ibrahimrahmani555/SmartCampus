@@ -3,12 +3,15 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import authRoutes from './auth/routes.js'
 
 const app = new Hono()
 
 app.get('/api/health', (c) => {
   return c.json({ status: 'ok' })
 })
+
+app.route('/api/auth', authRoutes)
 
 const port = Number(process.env.PORT ?? 3000)
 const currentFile = fileURLToPath(import.meta.url)
