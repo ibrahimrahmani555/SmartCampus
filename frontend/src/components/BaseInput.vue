@@ -4,7 +4,7 @@
       {{ label }}
     </label>
     <div class="input-wrap">
-      <input :id="inputId" :type="revealed ? 'text' : type" :placeholder="placeholder" :aria-invalid="Boolean(error)" :aria-describedby="error ? `${inputId}-error` : undefined" :autocomplete="autocomplete" />
+      <input :id="inputId" v-model="model" :type="revealed ? 'text' : type" :placeholder="placeholder" :aria-invalid="Boolean(error)" :aria-describedby="error ? `${inputId}-error` : undefined" :autocomplete="autocomplete" />
       <button v-if="revealable" class="reveal" type="button" :aria-label="revealed ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" @click="revealed = !revealed">
         {{ revealed ? 'Masquer' : 'Afficher' }}
       </button>
@@ -15,7 +15,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = withDefaults(
   defineProps<{
@@ -26,6 +26,7 @@ const props = withDefaults(
     id?: string
     autocomplete?: string
     revealable?: boolean
+    modelValue?: string
   }>(),
   {
     type: 'text',
@@ -34,9 +35,12 @@ const props = withDefaults(
     id: '',
     autocomplete: 'off',
     revealable: false,
+    modelValue: '',
   },
 )
 
+const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+const model = computed({ get: () => props.modelValue, set: (value: string) => emit('update:modelValue', value) })
 const inputId = props.id || `field-${Math.random().toString(36).slice(2, 9)}`
 const revealed = ref(false)
 </script>

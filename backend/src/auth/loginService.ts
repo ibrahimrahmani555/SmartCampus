@@ -5,7 +5,13 @@ export type LoginResult =
   | { success: true; user: NonNullable<Awaited<ReturnType<typeof findByEmail>>> }
   | { success: false; reason: 'invalid_credentials' | 'disabled_account' | 'unauthorized_domain' }
 
-export async function login(email: string, password: string): Promise<LoginResult> {
+type UserRepository = { findByEmail: typeof findByEmail }
+
+export async function login(
+  email: string,
+  password: string,
+  userRepository: UserRepository = { findByEmail },
+): Promise<LoginResult> {
   const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN?.trim().toLowerCase().replace(/^@/, '')
   const normalizedEmail = email.trim().toLowerCase()
 
@@ -13,7 +19,7 @@ export async function login(email: string, password: string): Promise<LoginResul
     return { success: false, reason: 'unauthorized_domain' }
   }
 
-  const user = await findByEmail(normalizedEmail)
+  const user = await userRepository.findByEmail(normalizedEmail)
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     return { success: false, reason: 'invalid_credentials' }
   }

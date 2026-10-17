@@ -13,7 +13,7 @@
           <img :src="roomImages[3]" alt="" />
         </div>
       </div>
-      <form class="login-card" @submit.prevent="">
+      <form class="login-card" @submit.prevent="submitLogin">
         <div class="login-mark">
           S
         </div>
@@ -27,16 +27,12 @@
           Connectez-vous avec votre e-mail institutionnel
         </p>
         <div class="fields">
-          <BaseInput id="login-email" label="E-mail institutionnel" type="email" autocomplete="username" placeholder="prenom.nom@exemple.ma" />
-          <BaseInput id="login-password" label="Mot de passe" type="password" autocomplete="current-password" placeholder="Votre mot de passe" :revealable="true" />
+          <BaseInput id="login-email" v-model="email" label="E-mail institutionnel" type="email" autocomplete="username" placeholder="prenom.nom@exemple.ma" />
+          <BaseInput id="login-password" v-model="password" label="Mot de passe" type="password" autocomplete="current-password" placeholder="Votre mot de passe" :revealable="true" />
         </div>
-        <!-- Pour tester le rendu :
-        <p class="error-message" role="alert">
-          Adresse e-mail ou mot de passe incorrect.
-        </p>
-        -->
-        <BaseButton type="submit" class="submit-button">
-          Se connecter
+        <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
+        <BaseButton type="submit" class="submit-button" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Connexion…' : 'Se connecter' }}
           <span>
             ↗
           </span>
@@ -55,6 +51,29 @@
   </main>
 </template>
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { login } from '../services/auth'
+const router = useRouter()
+const email = ref('')
+const password = ref('')
+const errorMessage = ref('')
+const isSubmitting = ref(false)
+
+async function submitLogin() {
+  if (isSubmitting.value) return
+  errorMessage.value = ''
+  isSubmitting.value = true
+  try {
+    await login(email.value, password.value)
+    await router.push('/')
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'La connexion a échoué.'
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
 const roomImages = ['https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85', 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=85', 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=85', 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=85'];
 import AppHeader from '../components/AppHeader.vue';
 import BaseInput from '../components/BaseInput.vue';
