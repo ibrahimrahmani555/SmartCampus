@@ -11,9 +11,11 @@ export async function login(email: string, password: string): Promise<AuthUser> 
     body: JSON.stringify({ email, password }),
   })
 
-  const data = (await response.json()) as AuthUser | { message?: string }
+  const data = (await response.json()) as AuthUser | { code?: string; message?: string }
   if (!response.ok) {
-    throw new Error('message' in data ? data.message ?? 'La connexion a échoué.' : 'La connexion a échoué.')
+    const error = new Error('message' in data ? data.message ?? 'La connexion a échoué.' : 'La connexion a échoué.')
+    Object.assign(error, { code: 'code' in data ? data.code : undefined, status: response.status })
+    throw error
   }
   return data as AuthUser
 }

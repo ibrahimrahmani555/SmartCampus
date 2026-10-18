@@ -14,6 +14,11 @@ export async function findByEmail(email: string) {
   return user
 }
 
+export async function setLockedUntil(userId: string, lockedUntil: Date | null) {
+  const [user] = await db.update(users).set({ lockedUntil }).where(eq(users.id, userId)).returning()
+  return user
+}
+
 export async function create({
   email,
   passwordHash,

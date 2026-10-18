@@ -121,7 +121,7 @@
             Quelques détails, et votre prochain espace n'est plus qu'à portée de
             clic.
           </p>
-          <span class="search-mark"> S </span>
+          <img class="search-mark" src="../assets/images/logo.png" alt="SmartCampus" />
         </div>
         <form class="search-form" @submit.prevent>
           <label>
@@ -580,9 +580,9 @@ const audiences = [
 .search-mark {
   display: block;
   margin-top: 30px;
-  color: #12351a19;
-  font: italic 100px var(--font-display);
-  line-height: 1;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
 }
 .search-form {
   display: grid;

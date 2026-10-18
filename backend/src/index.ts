@@ -33,12 +33,15 @@ app.post('/api/auth/login', async (c) => {
     const result = await login(parsed.data.email, parsed.data.password)
     if (!result.success) {
       if (result.reason === 'disabled_account') {
-        return c.json({ message: 'Ce compte est désactivé. Veuillez contacter l’administration.' }, 403)
+        return c.json({ code: 'ACCOUNT_DISABLED', message: 'Ce compte est désactivé. Veuillez contacter l’administration.' }, 403)
       }
       if (result.reason === 'unauthorized_domain') {
-        return c.json({ message: 'Veuillez utiliser une adresse e-mail de votre établissement.' }, 401)
+        return c.json({ code: 'UNAUTHORIZED_DOMAIN', message: 'Veuillez utiliser une adresse e-mail de votre établissement.' }, 401)
       }
-      return c.json({ message: 'E-mail ou mot de passe incorrect.' }, 401)
+      if (result.reason === 'account_locked') {
+        return c.json({ code: 'ACCOUNT_LOCKED', message: `Compte verrouillé pendant ${Number(process.env.LOCK_MINUTES ?? 15)} minutes` }, 423)
+      }
+      return c.json({ code: 'INVALID_CREDENTIALS', message: 'E-mail ou mot de passe incorrect' }, 401)
     }
 
     const timeoutMinutes = Number(process.env.SESSION_TIMEOUT_MINUTES ?? 30)

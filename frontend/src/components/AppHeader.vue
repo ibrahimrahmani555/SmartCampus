@@ -1,8 +1,7 @@
 <template>
   <header class="header" :class="{ 'header--light': light }">
     <a class="wordmark" href="/" aria-label="SmartCampus, accueil">
-      <span class="mark"> S </span>
-      <span>Smart<span>Campus</span></span>
+      <img class="mark" src="../assets/images/logo.png" alt="" />
     </a>
     <button
       class="menu-toggle"
@@ -68,23 +67,12 @@ nav {
   grid-column: 2;
   display: flex;
   align-items: center;
-  gap: 9px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
   white-space: nowrap;
 }
-.wordmark > span:last-child > span {
-  font-weight: 400;
-}
 .mark {
-  display: grid;
-  place-items: center;
-  width: 31px;
-  height: 31px;
-  border: 1px solid var(--gold);
-  border-radius: 50%;
-  font: italic 20px var(--font-display);
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
 }
 .nav-left,
 .nav-right {

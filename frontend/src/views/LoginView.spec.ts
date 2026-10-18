@@ -38,4 +38,15 @@ describe('LoginView', () => {
     expect(wrapper.get('[role="alert"]').text()).toBe('E-mail ou mot de passe incorrect.')
     expect(push).not.toHaveBeenCalled()
   })
+
+  it('shows the lock message and duration for HTTP 423', async () => {
+    const error = Object.assign(new Error('Compte verrouillé pendant 15 minutes'), { status: 423, code: 'ACCOUNT_LOCKED' })
+    login.mockRejectedValue(error)
+    const wrapper = mount(LoginView)
+    await wrapper.get('#login-email').setValue('student@campus.edu')
+    await wrapper.get('#login-password').setValue('Campus123')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.get('[role="alert"]').text()).toBe('Compte verrouillé pendant 15 minutes (15 min)')
+  })
 })

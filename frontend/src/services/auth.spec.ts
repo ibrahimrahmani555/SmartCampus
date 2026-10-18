@@ -26,11 +26,12 @@ describe('auth service', () => {
   it('rejects login with the server error message', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: false,
-      json: async () => ({ message: 'E-mail ou mot de passe incorrect.' }),
+      status: 401,
+      json: async () => ({ code: 'INVALID_CREDENTIALS', message: 'E-mail ou mot de passe incorrect' }),
     }))
 
     await expect(login('student@campus.edu', 'wrong')).rejects.toThrow(
-      'E-mail ou mot de passe incorrect.',
+      'E-mail ou mot de passe incorrect',
     )
   })
 

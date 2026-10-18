@@ -15,7 +15,7 @@
       </div>
       <form class="login-card" @submit.prevent="submitLogin">
         <div class="login-mark">
-          S
+          <img src="../assets/images/logo.png" alt="SmartCampus" />
         </div>
         <span class="eyebrow">
           Votre espace campus
@@ -68,7 +68,11 @@ async function submitLogin() {
     await login(email.value, password.value)
     await router.push('/dashboard')
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : 'La connexion a échoué.'
+    if (error instanceof Error && 'status' in error && error.status === 423) {
+      errorMessage.value = `${error.message} (15 min)`
+    } else {
+      errorMessage.value = error instanceof Error ? error.message : 'La connexion a échoué.'
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -143,13 +147,16 @@ import BaseButton from '../components/BaseButton.vue'
 .login-mark {
   display:grid;
   place-items:center;
-  width:43px;
-  height:43px;
+  width:76px;
+  height:76px;
   margin:0 auto 1px;
-  border:1px solid var(--gold);
-  border-radius:50%;
+  border:0;
   color:var(--green);
-  font:italic 27px var(--font-display)
+}
+.login-mark img {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
 }
 .eyebrow {
   justify-content:center;
