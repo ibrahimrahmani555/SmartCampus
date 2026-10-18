@@ -20,7 +20,10 @@
         <a href="#how"> Comment ça marche </a>
       </div>
       <div class="nav-right">
-        <RouterLink class="login-link" to="/login">
+        <button v-if="isAuthenticated" class="login-link logout-link" type="button" @click="signOut">
+          Se déconnecter
+        </button>
+        <RouterLink v-else class="login-link" to="/login">
           Se connecter
           <span> ↗ </span>
         </RouterLink>
@@ -29,9 +32,22 @@
   </header>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { useRouter } from 'vue-router'
+import { getCurrentUser, logout } from '../services/auth'
 defineProps<{ light?: boolean }>();
 const menuOpen = ref(false);
+const isAuthenticated = ref(false)
+const router = useRouter()
+onMounted(async () => { isAuthenticated.value = Boolean(await getCurrentUser().catch(() => null)) })
+async function signOut() {
+  try {
+    await logout()
+  } finally {
+    isAuthenticated.value = false
+    await router.push('/login')
+  }
+}
 </script>
 <style scoped>
 .header {
@@ -96,6 +112,11 @@ nav {
   border-radius: 999px;
   background: var(--green);
   color: var(--cream);
+}
+.logout-link {
+  border: 0;
+  font: inherit;
+  cursor: pointer;
 }
 .login-link span {
   padding-left: 8px;

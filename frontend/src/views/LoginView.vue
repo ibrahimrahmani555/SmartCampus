@@ -66,7 +66,7 @@ async function submitLogin() {
   isSubmitting.value = true
   try {
     await login(email.value, password.value)
-    await router.push('/')
+    await router.push('/dashboard')
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'La connexion a échoué.'
   } finally {

@@ -17,3 +17,21 @@ export async function findActiveWithUser(id: string, now = new Date()) {
 
   return result
 }
+
+export async function findWithUser(id: string) {
+  const [result] = await db
+    .select({ session: sessions, user: users })
+    .from(sessions)
+    .innerJoin(users, eq(sessions.userId, users.id))
+    .where(eq(sessions.id, id))
+    .limit(1)
+  return result
+}
+
+export async function extend(id: string, expiresAt: Date) {
+  await db.update(sessions).set({ expiresAt }).where(eq(sessions.id, id))
+}
+
+export async function remove(id: string) {
+  await db.delete(sessions).where(eq(sessions.id, id))
+}

@@ -7,10 +7,10 @@ import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { z } from 'zod'
 import { login } from './auth/loginService.js'
 import * as sessionRepository from './auth/sessionRepository.js'
+import { requireSession, sessionCookie } from './auth/sessionMiddleware.js'
 
 const app = new Hono()
 const loginBodySchema = z.object({ email: z.email(), password: z.string().min(1) })
-const sessionCookie = 'smartcampus_session'
 
 app.get('/api/health', (c) => {
   return c.json({ status: 'ok' })
@@ -41,7 +41,8 @@ app.post('/api/auth/login', async (c) => {
       return c.json({ message: 'E-mail ou mot de passe incorrect.' }, 401)
     }
 
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000)
+    const timeoutMinutes = Number(process.env.SESSION_TIMEOUT_MINUTES ?? 30)
+    const expiresAt = new Date(Date.now() + (Number.isFinite(timeoutMinutes) && timeoutMinutes > 0 ? timeoutMinutes : 30) * 60_000)
     const session = await sessionRepository.create(result.user.id, expiresAt)
     setCookie(c, sessionCookie, session.id, {
       httpOnly: true,
@@ -56,20 +57,19 @@ app.post('/api/auth/login', async (c) => {
   }
 })
 
-app.get('/api/auth/me', async (c) => {
+app.post('/api/auth/logout', async (c) => {
+  c.header('Cache-Control', 'no-store')
   const sessionId = getCookie(c, sessionCookie)
-  if (!sessionId) return c.json({ message: 'Authentification requise.' }, 401)
-
-  try {
-    const result = await sessionRepository.findActiveWithUser(sessionId)
-    if (!result) {
-      deleteCookie(c, sessionCookie, { path: '/' })
-      return c.json({ message: 'Authentification requise.' }, 401)
-    }
-    return c.json({ email: result.user.email, role: result.user.role })
-  } catch {
-    return c.json({ message: 'Authentification requise.' }, 401)
+  if (sessionId) {
+    try { await sessionRepository.remove(sessionId) } catch { /* logout remains idempotent */ }
   }
+  deleteCookie(c, sessionCookie, { path: '/' })
+  return c.body(null, 204)
+})
+
+app.get('/api/auth/me', requireSession, (c) => {
+  const user = c.get('user')
+  return c.json({ email: user.email, role: user.role })
 })
 
 const port = Number(process.env.PORT ?? 3000)

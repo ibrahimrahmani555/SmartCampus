@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getCurrentUser, login } from './auth'
+import { getCurrentUser, login, logout } from './auth'
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -38,5 +38,12 @@ describe('auth service', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 401, ok: false }))
 
     await expect(getCurrentUser()).resolves.toBeNull()
+  })
+
+  it('sends logout with the session cookie', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 })
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(logout()).resolves.toBeUndefined()
+    expect(fetchMock).toHaveBeenCalledWith('/api/auth/logout', { method: 'POST', credentials: 'include' })
   })
 })
