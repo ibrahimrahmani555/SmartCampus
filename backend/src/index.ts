@@ -6,14 +6,45 @@ import { Hono } from 'hono'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { z } from 'zod'
 import { login } from './auth/loginService.js'
+import { confirmReset, PasswordResetError, requestReset } from './auth/passwordResetService.js'
 import * as sessionRepository from './auth/sessionRepository.js'
 import { requireSession, sessionCookie } from './auth/sessionMiddleware.js'
 
 const app = new Hono()
 const loginBodySchema = z.object({ email: z.email(), password: z.string().min(1) })
+const passwordResetRequestSchema = z.object({ email: z.email() })
+const passwordResetConfirmSchema = z.object({ token: z.string().min(1), newPassword: z.string() })
 
 app.get('/api/health', (c) => {
   return c.json({ status: 'ok' })
+})
+
+app.post('/api/auth/password-reset/request', async (c) => {
+  c.header('Cache-Control', 'no-store')
+  let body: unknown
+  try { body = await c.req.json() } catch { body = {} }
+  const parsed = passwordResetRequestSchema.safeParse(body)
+  if (parsed.success) {
+    try { await requestReset(parsed.data.email) } catch { /* Keep account lookup and mail failures private. */ }
+  }
+  return c.json({ message: 'Si ce compte existe, un e-mail a été envoyé' }, 200)
+})
+
+app.post('/api/auth/password-reset/confirm', async (c) => {
+  c.header('Cache-Control', 'no-store')
+  let body: unknown
+  try { body = await c.req.json() } catch {
+    return c.json({ message: 'Données de réinitialisation invalides.' }, 400)
+  }
+  const parsed = passwordResetConfirmSchema.safeParse(body)
+  if (!parsed.success) return c.json({ message: 'Veuillez fournir un jeton et un mot de passe valides.' }, 400)
+  try {
+    await confirmReset(parsed.data.token, parsed.data.newPassword)
+    return c.body(null, 200)
+  } catch (error) {
+    if (error instanceof PasswordResetError) return c.json({ message: error.message }, 400)
+    return c.json({ message: 'La réinitialisation est momentanément indisponible.' }, 500)
+  }
 })
 
 app.post('/api/auth/login', async (c) => {

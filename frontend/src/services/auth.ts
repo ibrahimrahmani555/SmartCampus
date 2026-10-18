@@ -31,3 +31,24 @@ export async function logout(): Promise<void> {
   const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
   if (!response.ok) throw new Error('La déconnexion a échoué.')
 }
+
+export const passwordResetRequestMessage = 'Si ce compte existe, un e-mail a été envoyé'
+
+async function readErrorMessage(response: Response, fallback: string): Promise<string> {
+  const data = (await response.json()) as { message?: string }
+  return data.message ?? fallback
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  const response = await fetch('/api/auth/password-reset/request', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
+  })
+  if (!response.ok) throw new Error(await readErrorMessage(response, 'La demande a échoué.'))
+}
+
+export async function confirmPasswordReset(token: string, newPassword: string): Promise<void> {
+  const response = await fetch('/api/auth/password-reset/confirm', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, newPassword }),
+  })
+  if (!response.ok) throw new Error(await readErrorMessage(response, 'La réinitialisation a échoué.'))
+}

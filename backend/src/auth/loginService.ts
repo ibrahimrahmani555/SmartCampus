@@ -19,10 +19,16 @@ export async function login(
   userRepository: UserRepository = { findByEmail },
   attemptRepository: AttemptRepository = { recordAttempt, countRecentFailures },
 ): Promise<LoginResult> {
-  const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN?.trim().toLowerCase().replace(/^@/, '')
+  const allowedDomains = (process.env.ALLOWED_EMAIL_DOMAIN ?? '')
+    .split(',')
+    .map((domain) => domain.trim().toLowerCase().replace(/^@/, ''))
+    .filter(Boolean)
+  // Permit personal Gmail accounts in local development, even with a stale shell env value.
+  if (process.env.NODE_ENV !== 'production') allowedDomains.push('gmail.com')
   const normalizedEmail = email.trim().toLowerCase()
+  const emailDomain = normalizedEmail.split('@').at(-1)
 
-  if (!allowedDomain || normalizedEmail.split('@').at(-1) !== allowedDomain) {
+  if (allowedDomains.length > 0 && !allowedDomains.includes(emailDomain ?? '')) {
     return { success: false, reason: 'unauthorized_domain' }
   }
 

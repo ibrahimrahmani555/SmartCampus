@@ -26,6 +26,7 @@
         <p class="login-intro">
           Connectez-vous avec votre e-mail institutionnel
         </p>
+        <p v-if="route.query.reset === 'success'" class="success-message" role="status">Votre mot de passe a été réinitialisé. Vous pouvez vous connecter.</p>
         <div class="fields">
           <BaseInput id="login-email" v-model="email" label="E-mail institutionnel" type="email" autocomplete="username" placeholder="prenom.nom@exemple.ma" />
           <BaseInput id="login-password" v-model="password" label="Mot de passe" type="password" autocomplete="current-password" placeholder="Votre mot de passe" :revealable="true" />
@@ -37,9 +38,9 @@
             ↗
           </span>
         </BaseButton>
-        <a class="forgot" href="#">
+        <RouterLink class="forgot" to="/forgot-password">
           Mot de passe oublié ?
-        </a>
+        </RouterLink>
         <span class="card-footnote">
           ENSA KHOURIBGA · SMARTCAMPUS
         </span>
@@ -52,9 +53,10 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { login } from '../services/auth'
 const router = useRouter()
+const route = useRoute()
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
@@ -218,6 +220,7 @@ import BaseButton from '../components/BaseButton.vue'
   font-size:10px;
   text-align:left
 }
+.success-message { margin:0; padding:10px 12px; border-radius:10px; background:#2e7d3212; color:#245c31; font-size:10px }
 .login-card :deep(.submit-button) {
   font-size:11px
 }

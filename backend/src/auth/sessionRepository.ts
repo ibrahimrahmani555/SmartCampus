@@ -35,3 +35,7 @@ export async function extend(id: string, expiresAt: Date) {
 export async function remove(id: string) {
   await db.delete(sessions).where(eq(sessions.id, id))
 }
+
+export async function removeAllForUser(userId: string) {
+  await db.delete(sessions).where(eq(sessions.userId, userId))
+}

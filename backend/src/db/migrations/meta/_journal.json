@@ -29,6 +29,13 @@
       "when": 1792280100000,
       "tag": "0003_add_user_lock",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792280200000,
+      "tag": "0004_add_password_reset_tokens",
+      "breakpoints": true
     }
   ]
 }
