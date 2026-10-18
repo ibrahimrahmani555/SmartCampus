@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { findByEmail, verifyPassword } = vi.hoisted(() => ({
+const { findByEmail, verifyPassword, recordAttempt, countRecentFailures, securityLogger } = vi.hoisted(() => ({
   findByEmail: vi.fn(),
   verifyPassword: vi.fn(),
+  recordAttempt: vi.fn(),
+  countRecentFailures: vi.fn(),
+  securityLogger: vi.fn(),
 }))
 
 vi.mock('./userRepository.js', () => ({ findByEmail }))
 vi.mock('./passwordService.js', () => ({ verifyPassword }))
+vi.mock('./loginAttemptRepository.js', () => ({ recordAttempt, countRecentFailures }))
+vi.mock('./securityLogger.js', () => ({ logRepeatedLoginFailures: securityLogger }))
 
 import { login } from './loginService.js'
 import app from '../index.js'
@@ -28,6 +33,9 @@ describe('loginService', () => {
     process.env.ALLOWED_EMAIL_DOMAIN = 'campus.edu'
     repository.findByEmail.mockReset()
     verifyPassword.mockReset()
+    recordAttempt.mockReset().mockResolvedValue(undefined)
+    countRecentFailures.mockReset().mockResolvedValue(0)
+    securityLogger.mockReset()
   })
 
   it('succeeds with valid credentials', async () => {
@@ -49,6 +57,27 @@ describe('loginService', () => {
       success: false,
       reason: 'invalid_credentials',
     })
+  })
+
+  it('keeps the generic message and records a security event after three consecutive failures', async () => {
+    repository.findByEmail.mockResolvedValue(user)
+    verifyPassword.mockResolvedValue(false)
+    countRecentFailures.mockResolvedValueOnce(1).mockResolvedValueOnce(2).mockResolvedValueOnce(3)
+
+    const responses = []
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const result = await login(user.email, `wrong-${attempt}`, repository)
+      responses.push(result.success ? '' : 'E-mail ou mot de passe incorrect')
+    }
+
+    expect(responses).toEqual([
+      'E-mail ou mot de passe incorrect',
+      'E-mail ou mot de passe incorrect',
+      'E-mail ou mot de passe incorrect',
+    ])
+    expect(recordAttempt).toHaveBeenCalledTimes(3)
+    expect(securityLogger).toHaveBeenCalledWith(user.email, 3)
+    expect(JSON.stringify(securityLogger.mock.calls)).not.toContain('wrong-')
   })
 
   it('returns the same invalid credentials result for an unknown email', async () => {
@@ -89,7 +118,6 @@ describe('POST /api/auth/login', () => {
       id: 'session-1',
       userId: user.id,
       expiresAt: new Date('2026-01-01T00:30:00.000Z'),
-      createdAt: new Date('2026-01-01T00:00:00.000Z'),
     })
   })
 

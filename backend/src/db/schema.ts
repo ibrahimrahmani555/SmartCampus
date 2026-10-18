@@ -1,8 +1,10 @@
 import { sql } from 'drizzle-orm'
 import {
   check,
+  boolean,
   pgEnum,
   pgTable,
+  index,
   text,
   timestamp,
   unique,
@@ -35,3 +37,14 @@ export const sessions = pgTable('sessions', {
     .references(() => users.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 })
+
+export const loginAttempts = pgTable(
+  'login_attempts',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    email: text('email').notNull(),
+    succeeded: boolean('succeeded').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('login_attempts_email_created_at_idx').on(table.email, table.createdAt)],
+)
