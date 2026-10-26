@@ -1,16 +1,59 @@
+
 services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    image: smartcampus:1.0
+
+    ports:
+      - "8081:3000"
+
+    environment:
+      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL:?Define DATABASE_URL in .env}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   postgres:
     image: postgres:16-alpine
+
     container_name: smartcampus-postgres
+
     restart: unless-stopped
+
     environment:
       POSTGRES_DB: smartcampus
       POSTGRES_USER: smartcampus
-      POSTGRES_PASSWORD: smartcampus
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD in .env}
+
     ports:
       - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartcampus -d smartcampus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
