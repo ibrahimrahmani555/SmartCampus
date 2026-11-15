@@ -16,6 +16,12 @@ export interface RoomFilters {
   equipment?: string[]
 }
 
+export type RoomAvailabilityStatus = 'free' | 'occupied' | 'closed'
+
+export interface RoomAvailability extends Room {
+  status: RoomAvailabilityStatus
+}
+
 export class RoomsRequestError extends Error {
   constructor(
     message: string,
@@ -50,4 +56,25 @@ export async function listRooms(filters: RoomFilters = {}): Promise<Room[]> {
   }
 
   return (await response.json()) as Room[]
+}
+
+export async function getRoomAvailability(date: string, start: string, end: string): Promise<RoomAvailability[]> {
+  const params = new URLSearchParams({ date, start, end })
+  const response = await fetch(`/api/rooms/availability?${params.toString()}`, { credentials: 'include' })
+
+  if (response.status === 401) {
+    throw new RoomsRequestError(roomsText.unauthenticated, response.status)
+  }
+  if (response.status === 403) {
+    throw new RoomsRequestError(roomsText.forbidden, response.status)
+  }
+  if (response.status === 400) {
+    const data = (await response.json()) as { message?: string }
+    throw new RoomsRequestError(data.message ?? roomsText.error, response.status)
+  }
+  if (!response.ok) {
+    throw new RoomsRequestError(roomsText.error, response.status)
+  }
+
+  return (await response.json()) as RoomAvailability[]
 }

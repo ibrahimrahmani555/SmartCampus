@@ -10,6 +10,22 @@
           <p class="subtitle">{{ roomsText.subtitle }}</p>
         </div>
 
+        <form class="availability-form" @submit.prevent="loadAvailability">
+          <label>
+            {{ availabilityText.date }}
+            <input v-model="availabilityDate" type="date" required />
+          </label>
+          <label>
+            {{ availabilityText.start }}
+            <input v-model="availabilityStart" type="time" required />
+          </label>
+          <label>
+            {{ availabilityText.end }}
+            <input v-model="availabilityEnd" type="time" required />
+          </label>
+          <button type="submit">{{ availabilityText.check }}</button>
+        </form>
+
         <form class="room-filters" @submit.prevent="applyFilters">
           <label>
             {{ filtersText.building }}
@@ -51,6 +67,9 @@
               <span v-if="room.floor !== null" class="room-card__floor">{{ roomsText.floor }} {{ room.floor }}</span>
             </div>
             <h2>{{ room.name }}</h2>
+            <span class="availability-badge" :class="`availability-badge--${room.status}`">
+              {{ availabilityText.status[room.status] }}
+            </span>
             <p class="room-card__capacity">
               {{ roomsText.capacity }} : {{ room.capacity }} {{ roomsText.seats }}
             </p>
@@ -74,7 +93,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import AppSidebar from '../components/AppSidebar.vue'
 import { roomsText } from '../constants/rooms'
-import { listRooms, RoomsRequestError, type Room } from '../services/rooms'
+import { getRoomAvailability, listRooms, RoomsRequestError, type Room, type RoomAvailabilityStatus } from '../services/rooms'
 
 const filtersText = {
   building: 'Bâtiment',
@@ -86,16 +105,30 @@ const filtersText = {
   reset: 'Réinitialiser',
   noResults: 'Aucune salle trouvée',
 } as const
+const availabilityText = {
+  date: 'Date',
+  start: 'Heure de début',
+  end: 'Heure de fin',
+  check: 'Vérifier la disponibilité',
+  status: {
+    free: 'Libre',
+    occupied: 'Occupée',
+    closed: 'Fermée',
+  },
+} as const
 const buildingOptions = ['Bâtiment A', 'Bâtiment B']
 const equipmentOptions = ['wifi', 'projecteur', 'tableau', 'prises', 'visioconférence']
 const route = useRoute()
 const router = useRouter()
-const rooms = ref<Room[]>([])
+const rooms = ref<Array<Room & { status: RoomAvailabilityStatus }>>([])
 const loading = ref(true)
 const errorMessage = ref('')
 const building = ref('')
 const minCapacity = ref('')
 const selectedEquipment = ref<string[]>([])
+const availabilityDate = ref(new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Casablanca' }).format(new Date()))
+const availabilityStart = ref('08:00')
+const availabilityEnd = ref('10:00')
 
 function readFiltersFromUrl() {
   building.value = typeof route.query.building === 'string' ? route.query.building : ''
@@ -112,16 +145,28 @@ async function loadRooms() {
   loading.value = true
   errorMessage.value = ''
   try {
-    rooms.value = await listRooms({
+    const [filteredRooms, availability] = await Promise.all([
+      listRooms({
       building: building.value || undefined,
       minCapacity: minCapacity.value ? Number(minCapacity.value) : undefined,
       equipment: selectedEquipment.value,
-    })
+      }),
+      getRoomAvailability(availabilityDate.value, availabilityStart.value, availabilityEnd.value),
+    ])
+    const statusByRoomId = new Map(availability.map((room) => [room.id, room.status]))
+    rooms.value = filteredRooms.map((room) => ({
+      ...room,
+      status: statusByRoomId.get(room.id) ?? 'free',
+    }))
   } catch (error) {
     errorMessage.value = error instanceof RoomsRequestError ? error.message : roomsText.error
   } finally {
     loading.value = false
   }
+}
+
+async function loadAvailability() {
+  await loadRooms()
 }
 
 async function applyFilters() {
@@ -190,6 +235,49 @@ h1 {
   margin: 18px 0 0;
   color: var(--text-muted, #686b61);
   font-size: 1rem;
+}
+
+.availability-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr)) auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid var(--border, #dedecf);
+  border-radius: 18px;
+  background: var(--surface, #fffdf7);
+}
+
+.availability-form label {
+  color: var(--text-muted, #686b61);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.availability-form input {
+  display: block;
+  width: 100%;
+  min-height: 38px;
+  margin-top: 7px;
+  padding: 8px 10px;
+  border: 1px solid var(--border, #dedecf);
+  border-radius: 9px;
+  background: var(--cream, #f8f6ed);
+  color: var(--green, #173b32);
+  font: inherit;
+}
+
+.availability-form button {
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid var(--green, #173b32);
+  border-radius: 9px;
+  background: var(--green, #173b32);
+  color: var(--cream, #f8f6ed);
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
 }
 
 .room-filters {
@@ -317,6 +405,30 @@ h1 {
   font-weight: 500;
 }
 
+.availability-badge {
+  display: inline-block;
+  margin-bottom: 2px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.availability-badge--free {
+  background: #d7edda;
+  color: #216b2c;
+}
+
+.availability-badge--occupied {
+  background: #f7d8d5;
+  color: #a2362d;
+}
+
+.availability-badge--closed {
+  background: #e0e0e0;
+  color: #5d5d5d;
+}
+
 h2 {
   margin: 14px 0 8px;
   font-size: 1.35rem;
@@ -376,6 +488,10 @@ li {
   }
 
   .room-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .availability-form {
     grid-template-columns: 1fr;
   }
 
