@@ -4,6 +4,7 @@ import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import ForgotPasswordView from '../views/ForgotPasswordView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
+import RoomsView from '../views/RoomsView.vue'
 import { h } from 'vue'
 import { useAuth, type Permission } from '../composables/useAuth'
 
@@ -26,6 +27,12 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: DashboardView,
+      meta: { requiresAuth: true, permission: 'rooms:read' as Permission },
+    },
+    {
+      path: '/rooms',
+      name: 'rooms',
+      component: RoomsView,
       meta: { requiresAuth: true, permission: 'rooms:read' as Permission },
     },
     {

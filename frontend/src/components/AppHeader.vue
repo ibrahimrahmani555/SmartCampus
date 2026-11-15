@@ -15,7 +15,7 @@
     </button>
     <nav :class="{ 'nav--open': menuOpen }">
       <div class="nav-left">
-        <a href="#rooms"> Salles </a>
+        <RouterLink v-if="isAuthenticated" to="/rooms"> Salles </RouterLink>
         <a href="#how"> Comment ça marche </a>
       </div>
       <div class="nav-right">
@@ -31,19 +31,20 @@
   </header>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from 'vue-router'
-import { getCurrentUser, logout } from '../services/auth'
+import { getCurrentUser, logout, type AuthUser } from '../services/auth'
 defineProps<{ light?: boolean }>();
 const menuOpen = ref(false);
-const isAuthenticated = ref(false)
+const currentUser = ref<AuthUser | null>(null)
+const isAuthenticated = computed(() => currentUser.value !== null)
 const router = useRouter()
-onMounted(async () => { isAuthenticated.value = Boolean(await getCurrentUser().catch(() => null)) })
+onMounted(async () => { currentUser.value = await getCurrentUser().catch(() => null) })
 async function signOut() {
   try {
     await logout()
   } finally {
-    isAuthenticated.value = false
+    currentUser.value = null
     await router.push('/login')
   }
 }
