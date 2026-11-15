@@ -22,6 +22,23 @@ export interface RoomAvailability extends Room {
   status: RoomAvailabilityStatus
 }
 
+export interface RoomCalendarSlot {
+  start: string
+  end: string
+  status: RoomAvailabilityStatus
+}
+
+export interface RoomCalendarDay {
+  date: string
+  slots: RoomCalendarSlot[]
+}
+
+export interface RoomCalendar {
+  roomId: string
+  weekStart: string
+  days: RoomCalendarDay[]
+}
+
 export class RoomsRequestError extends Error {
   constructor(
     message: string,
@@ -77,4 +94,27 @@ export async function getRoomAvailability(date: string, start: string, end: stri
   }
 
   return (await response.json()) as RoomAvailability[]
+}
+
+export async function getRoomCalendar(roomId: string, weekStart: string): Promise<RoomCalendar> {
+  const params = new URLSearchParams({ weekStart })
+  const response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/calendar?${params.toString()}`, {
+    credentials: 'include',
+  })
+
+  if (response.status === 401) {
+    throw new RoomsRequestError(roomsText.unauthenticated, response.status)
+  }
+  if (response.status === 403) {
+    throw new RoomsRequestError(roomsText.forbidden, response.status)
+  }
+  if (response.status === 400 || response.status === 404) {
+    const data = (await response.json()) as { message?: string }
+    throw new RoomsRequestError(data.message ?? roomsText.error, response.status)
+  }
+  if (!response.ok) {
+    throw new RoomsRequestError(roomsText.error, response.status)
+  }
+
+  return (await response.json()) as RoomCalendar
 }

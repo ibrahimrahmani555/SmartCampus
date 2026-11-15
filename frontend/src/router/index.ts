@@ -5,6 +5,7 @@ import DashboardView from '../views/DashboardView.vue'
 import ForgotPasswordView from '../views/ForgotPasswordView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
 import RoomsView from '../views/RoomsView.vue'
+import WeekCalendar from '../views/WeekCalendar.vue'
 import { h } from 'vue'
 import { useAuth, type Permission } from '../composables/useAuth'
 
@@ -33,6 +34,18 @@ const router = createRouter({
       path: '/rooms',
       name: 'rooms',
       component: RoomsView,
+      meta: { requiresAuth: true, permission: 'rooms:read' as Permission },
+    },
+    {
+      path: '/rooms/:id/calendar',
+      name: 'room-calendar',
+      component: WeekCalendar,
+      meta: { requiresAuth: true, permission: 'availability:read' as Permission },
+    },
+    {
+      path: '/bookings/new',
+      name: 'booking-new',
+      component: { render: () => h('main', 'La demande de réservation sera bientôt disponible') },
       meta: { requiresAuth: true, permission: 'rooms:read' as Permission },
     },
     {

@@ -7,6 +7,8 @@ import {
 } from './availabilityReaders.js'
 
 export const CAMPUS_TIMEZONE = 'Africa/Casablanca'
+export const CALENDAR_START_HOUR = 8
+export const CALENDAR_END_HOUR = 20
 
 export type RoomAvailabilityStatus = 'free' | 'occupied' | 'closed'
 
@@ -44,6 +46,16 @@ function campusDateTimeToUtc(date: string, time: string): Date {
   return new Date(utcGuess - (campusAsUtc - utcGuess))
 }
 
+function addDays(date: string, days: number) {
+  const value = new Date(`${date}T00:00:00Z`)
+  value.setUTCDate(value.getUTCDate() + days)
+  return value.toISOString().slice(0, 10)
+}
+
+function overlaps(from: Date, to: Date, otherFrom: Date, otherTo: Date) {
+  return otherFrom < to && otherTo > from
+}
+
 export function createRoomAvailabilityService({
   occupancyReader = emptyOccupancyReader,
   closureReader = emptyClosureReader,
@@ -72,6 +84,42 @@ export function createRoomAvailabilityService({
               ? 'occupied' as const
               : 'free' as const,
         }))
+    },
+    async calendar(roomId: string, weekStart: string) {
+      const rooms = await roomReader.listActive()
+      const room = rooms.find((candidate) => candidate.id === roomId && candidate.isActive)
+      if (!room) return undefined
+
+      const weekEnd = addDays(weekStart, 7)
+      const from = campusDateTimeToUtc(weekStart, `${String(CALENDAR_START_HOUR).padStart(2, '0')}:00`)
+      const to = campusDateTimeToUtc(weekEnd, `${String(CALENDAR_END_HOUR).padStart(2, '0')}:00`)
+      const [reservations, closures] = await Promise.all([
+        occupancyReader.findApprovedOverlapping([roomId], from, to),
+        closureReader.findClosuresOverlapping([roomId], from, to),
+      ])
+
+      return {
+        roomId,
+        weekStart,
+        days: Array.from({ length: 7 }, (_, dayIndex) => {
+          const date = addDays(weekStart, dayIndex)
+          const slots = Array.from({ length: CALENDAR_END_HOUR - CALENDAR_START_HOUR }, (_, slotIndex) => {
+            const startHour = CALENDAR_START_HOUR + slotIndex
+            const start = `${String(startHour).padStart(2, '0')}:00`
+            const end = `${String(startHour + 1).padStart(2, '0')}:00`
+            const slotFrom = campusDateTimeToUtc(date, start)
+            const slotTo = campusDateTimeToUtc(date, end)
+            const status = closures.some((closure) => overlaps(slotFrom, slotTo, closure.from, closure.to))
+              ? 'closed' as const
+              : reservations.some((reservation) => overlaps(slotFrom, slotTo, reservation.from, reservation.to))
+                ? 'occupied' as const
+                : 'free' as const
+
+            return { start, end, status }
+          })
+          return { date, slots }
+        }),
+      }
     },
   }
 }

@@ -25,6 +25,10 @@ const availabilityQuerySchema = z.object({
     context.addIssue({ code: 'custom', path: ['end'], message: 'L’heure de fin doit être postérieure à l’heure de début.' })
   }
 })
+const weekStartSchema = z.string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'weekStart doit respecter le format YYYY-MM-DD.')
+  .refine(isValidDate, 'weekStart est une date invalide.')
+  .refine((value) => new Date(`${value}T00:00:00Z`).getUTCDay() === 1, 'weekStart doit être un lundi.')
 const roomFiltersSchema = z.object({
   building: z.string().optional(),
   minCapacity: z.string()
@@ -96,6 +100,20 @@ roomRoutes.get('/availability', requirePermission('availability:read'), async (c
       status: statusByRoomId.get(room.id) ?? 'free',
     })),
   )
+})
+
+roomRoutes.get('/:id/calendar', requirePermission('availability:read'), async (c) => {
+  const parsedId = roomIdSchema.safeParse(c.req.param('id'))
+  if (!parsedId.success) return c.json({ message: 'Identifiant de salle invalide.' }, 400)
+
+  const parsedWeekStart = weekStartSchema.safeParse(c.req.query('weekStart'))
+  if (!parsedWeekStart.success) {
+    return c.json({ message: parsedWeekStart.error.issues[0]?.message ?? 'Semaine invalide.' }, 400)
+  }
+
+  const calendar = await roomAvailabilityService.calendar(parsedId.data, parsedWeekStart.data)
+  if (!calendar) return c.json({ message: 'Salle introuvable.' }, 404)
+  return c.json(calendar)
 })
 
 roomRoutes.get('/:id', requirePermission('rooms:read'), async (c) => {
