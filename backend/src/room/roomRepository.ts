@@ -10,6 +10,10 @@ export async function listActive() {
 }
 
 export async function findById(id: string) {
-  const [room] = await db.select().from(rooms).where(and(eq(rooms.id, id))).limit(1)
+  const [room] = await db
+    .select()
+    .from(rooms)
+    .where(and(eq(rooms.id, id), eq(rooms.isActive, true)))
+    .limit(1)
   return room
 }
