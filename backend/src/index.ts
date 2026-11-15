@@ -10,6 +10,7 @@ import { confirmReset, PasswordResetError, requestReset } from './auth/passwordR
 import { requirePermission } from './auth/permissions.js'
 import * as sessionRepository from './auth/sessionRepository.js'
 import { requireSession, sessionCookie } from './auth/sessionMiddleware.js'
+import { roomRoutes } from './room/roomRoutes.js'
 
 const app = new Hono()
 const loginBodySchema = z.object({ email: z.email(), password: z.string().min(1) })
@@ -110,6 +111,8 @@ app.get('/api/auth/me', requireSession, (c) => {
 app.get('/api/auth/permissions/rooms', requireSession, requirePermission('rooms:read'), (c) => {
   return c.json({ allowed: true })
 })
+
+app.route('/api/rooms', roomRoutes)
 
 const port = Number(process.env.PORT ?? 3000)
 const currentFile = fileURLToPath(import.meta.url)

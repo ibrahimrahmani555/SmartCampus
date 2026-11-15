@@ -36,6 +36,13 @@
       "when": 1792280200000,
       "tag": "0004_add_password_reset_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792280300000,
+      "tag": "0005_add_rooms",
+      "breakpoints": true
     }
   ]
 }

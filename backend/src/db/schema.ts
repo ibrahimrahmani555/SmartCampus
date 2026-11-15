@@ -9,6 +9,7 @@ import {
   timestamp,
   unique,
   uuid,
+  integer,
 } from 'drizzle-orm/pg-core'
 
 export const userRoleEnum = pgEnum('user_role', ['student', 'staff', 'admin'])
@@ -62,4 +63,24 @@ export const passwordResetTokens = pgTable(
     usedAt: timestamp('used_at', { withTimezone: true }),
   },
   (table) => [index('password_reset_tokens_user_id_idx').on(table.userId)],
+)
+
+export const rooms = pgTable(
+  'rooms',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    building: text('building').notNull(),
+    floor: integer('floor'),
+    capacity: integer('capacity').notNull(),
+    equipment: text('equipment').array().notNull().default(sql`ARRAY[]::text[]`),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique('rooms_building_name_unique').on(table.building, table.name),
+    check('rooms_capacity_positive_check', sql`${table.capacity} > 0`),
+    index('rooms_is_active_building_idx').on(table.isActive, table.building),
+    index('rooms_capacity_idx').on(table.capacity),
+  ],
 )
