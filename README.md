@@ -74,3 +74,5 @@ Frontend :
 cd frontend
 npm test
 ```
+
+Projet réalisé dans le cadre du TP DevOps, ENSA Khouribga.
