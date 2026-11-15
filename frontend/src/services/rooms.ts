@@ -10,6 +10,12 @@ export interface Room {
   image_url: string | null
 }
 
+export interface RoomFilters {
+  building?: string
+  minCapacity?: number
+  equipment?: string[]
+}
+
 export class RoomsRequestError extends Error {
   constructor(
     message: string,
@@ -20,14 +26,24 @@ export class RoomsRequestError extends Error {
   }
 }
 
-export async function listRooms(): Promise<Room[]> {
-  const response = await fetch('/api/rooms', { credentials: 'include' })
+export async function listRooms(filters: RoomFilters = {}): Promise<Room[]> {
+  const params = new URLSearchParams()
+  if (filters.building) params.set('building', filters.building)
+  if (filters.minCapacity !== undefined) params.set('minCapacity', String(filters.minCapacity))
+  for (const equipment of filters.equipment ?? []) params.append('equipment', equipment)
+
+  const query = params.toString()
+  const response = await fetch(`/api/rooms${query ? `?${query}` : ''}`, { credentials: 'include' })
 
   if (response.status === 401) {
     throw new RoomsRequestError(roomsText.unauthenticated, response.status)
   }
   if (response.status === 403) {
     throw new RoomsRequestError(roomsText.forbidden, response.status)
+  }
+  if (response.status === 400) {
+    const data = (await response.json()) as { message?: string }
+    throw new RoomsRequestError(data.message ?? roomsText.error, response.status)
   }
   if (!response.ok) {
     throw new RoomsRequestError(roomsText.error, response.status)

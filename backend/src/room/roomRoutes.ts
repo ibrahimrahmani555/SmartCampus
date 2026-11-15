@@ -5,6 +5,15 @@ import { requireSession } from '../auth/sessionMiddleware.js'
 import * as roomService from './roomService.js'
 
 const roomIdSchema = z.uuid()
+const roomFiltersSchema = z.object({
+  building: z.string().optional(),
+  minCapacity: z.string()
+    .regex(/^\d+$/, 'minCapacity doit être un entier supérieur ou égal à 1.')
+    .transform(Number)
+    .refine((value) => value >= 1, 'minCapacity doit être un entier supérieur ou égal à 1.')
+    .optional(),
+  equipment: z.array(z.string().min(1)).default([]),
+})
 
 function toRoomResponse(room: {
   id: string
@@ -31,7 +40,16 @@ export const roomRoutes = new Hono()
 roomRoutes.use('*', requireSession, requirePermission('rooms:read'))
 
 roomRoutes.get('/', async (c) => {
-  const rooms = await roomService.listRooms()
+  const parsedFilters = roomFiltersSchema.safeParse({
+    building: c.req.query('building')?.trim() || undefined,
+    minCapacity: c.req.query('minCapacity')?.trim() || undefined,
+    equipment: (c.req.queries('equipment') ?? []).map((value) => value.trim().toLowerCase()).filter(Boolean),
+  })
+  if (!parsedFilters.success) {
+    return c.json({ message: parsedFilters.error.issues[0]?.message ?? 'Filtres invalides.' }, 400)
+  }
+
+  const rooms = await roomService.listRooms(parsedFilters.data)
   return c.json(rooms.map(toRoomResponse))
 })
 

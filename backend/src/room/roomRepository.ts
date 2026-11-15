@@ -1,12 +1,30 @@
-import { and, eq } from 'drizzle-orm'
+import { and, arrayContains, eq, gte, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { rooms } from '../db/schema.js'
 
-export async function listActive() {
+export type RoomFilters = {
+  building?: string
+  minCapacity?: number
+  equipment?: string[]
+}
+
+export async function listActive(filters: RoomFilters = {}) {
+  const conditions = [eq(rooms.isActive, true)]
+
+  if (filters.building) {
+    conditions.push(sql`lower(${rooms.building}) = ${filters.building.trim().toLowerCase()}`)
+  }
+  if (filters.minCapacity !== undefined) {
+    conditions.push(gte(rooms.capacity, filters.minCapacity))
+  }
+  if (filters.equipment?.length) {
+    conditions.push(arrayContains(rooms.equipment, filters.equipment))
+  }
+
   return db
     .select()
     .from(rooms)
-    .where(eq(rooms.isActive, true))
+    .where(and(...conditions))
 }
 
 export async function findById(id: string) {
