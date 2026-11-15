@@ -1,36 +1,32 @@
 <template>
   <div class="dashboard-page">
-    <AppHeader />
-    <main class="dashboard-content">
-      <span class="eyebrow">Votre espace SmartCampus</span>
-      <h1>Bienvenue sur votre tableau de bord</h1>
-      <p>Votre session est active. Vous pouvez vous déconnecter à tout moment.</p>
-      <BaseButton type="button" @click="signOut">Se déconnecter</BaseButton>
-    </main>
+    <AppSidebar />
+    <div class="dashboard-main">
+      
+      <main class="dashboard-content">
+        <span class="eyebrow">Votre espace SmartCampus</span>
+        <h1>Bienvenue sur votre tableau de bord</h1>
+        <p>Votre session est active. Utilisez le menu pour consulter les salles.</p>
+      </main>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
-import BaseButton from '../components/BaseButton.vue'
-import { logout } from '../services/auth'
-
-const router = useRouter()
-
-async function signOut() {
-  try {
-    await logout()
-  } finally {
-    await router.push('/login')
-  }
-}
+import AppSidebar from '../components/AppSidebar.vue'
 </script>
 
 <style scoped>
 .dashboard-page {
+  display: flex;
   min-height: 100vh;
   background: var(--cream);
+}
+
+.dashboard-main {
+  flex: 1;
+  min-width: 0;
 }
 
 .dashboard-content {
@@ -49,5 +45,11 @@ async function signOut() {
 
 .dashboard-content p {
   color: #63675d;
+}
+
+@media (max-width: 760px) {
+  .dashboard-page {
+    display: block;
+  }
 }
 </style>

@@ -24,19 +24,19 @@ const testAccounts = [
 ] as const
 
 const seedRooms: (typeof rooms.$inferInsert)[] = [
-  { name: 'Amphi Lumière', building: 'Bâtiment A', floor: 0, capacity: 200, equipment: ['projecteur', 'wifi', 'tableau', 'prises', 'visioconférence'], isActive: true },
-  { name: 'Salle Atlas', building: 'Bâtiment A', floor: 1, capacity: 48, equipment: ['projecteur', 'wifi', 'tableau', 'prises'], isActive: true },
-  { name: 'Salle Cèdre', building: 'Bâtiment A', floor: 1, capacity: 24, equipment: ['wifi', 'tableau', 'prises'], isActive: true },
-  { name: 'Salle Delta', building: 'Bâtiment A', floor: 2, capacity: 72, equipment: ['projecteur', 'wifi', 'tableau', 'visioconférence'], isActive: true },
-  { name: 'Salle Érable', building: 'Bâtiment A', floor: 2, capacity: 12, equipment: ['wifi', 'tableau'], isActive: true },
-  { name: 'Salle Iris', building: 'Bâtiment A', floor: 3, capacity: 36, equipment: ['projecteur', 'wifi', 'prises'], isActive: false },
-  { name: 'Salle Jade', building: 'Bâtiment A', floor: 3, capacity: 60, equipment: ['projecteur', 'wifi', 'tableau', 'prises'], isActive: true },
-  { name: 'Forum Newton', building: 'Bâtiment B', floor: 0, capacity: 180, equipment: ['projecteur', 'wifi', 'tableau', 'prises', 'visioconférence'], isActive: true },
-  { name: 'Salle Orion', building: 'Bâtiment B', floor: 1, capacity: 30, equipment: ['wifi', 'tableau', 'prises'], isActive: true },
-  { name: 'Salle Pixel', building: 'Bâtiment B', floor: 1, capacity: 54, equipment: ['projecteur', 'wifi', 'tableau'], isActive: true },
-  { name: 'Salle Quartz', building: 'Bâtiment B', floor: 2, capacity: 96, equipment: ['projecteur', 'wifi', 'prises', 'visioconférence'], isActive: true },
-  { name: 'Salle Rive', building: 'Bâtiment B', floor: 2, capacity: 18, equipment: ['wifi', 'tableau'], isActive: false },
-  { name: 'Salle Solaris', building: 'Bâtiment B', floor: 3, capacity: 42, equipment: ['projecteur', 'wifi', 'tableau', 'prises'], isActive: true },
+  { name: 'Amphi Lumière', building: 'Bâtiment A', floor: 0, capacity: 200, equipment: ['projecteur', 'wifi', 'tableau', 'prises', 'visioconférence'], imageUrl: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85', isActive: true },
+  { name: 'Salle Atlas', building: 'Bâtiment A', floor: 1, capacity: 48, equipment: ['projecteur', 'wifi', 'tableau', 'prises'], imageUrl: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=85', isActive: true },
+  { name: 'Salle Cèdre', building: 'Bâtiment A', floor: 1, capacity: 24, equipment: ['wifi', 'tableau', 'prises'], imageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=85', isActive: true },
+  { name: 'Salle Delta', building: 'Bâtiment A', floor: 2, capacity: 72, equipment: ['projecteur', 'wifi', 'tableau', 'visioconférence'], imageUrl: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=85', isActive: true },
+  { name: 'Salle Érable', building: 'Bâtiment A', floor: 2, capacity: 12, equipment: ['wifi', 'tableau'], imageUrl: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85', isActive: true },
+  { name: 'Salle Iris', building: 'Bâtiment A', floor: 3, capacity: 36, equipment: ['projecteur', 'wifi', 'prises'], imageUrl: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=85', isActive: false },
+  { name: 'Salle Jade', building: 'Bâtiment A', floor: 3, capacity: 60, equipment: ['projecteur', 'wifi', 'tableau', 'prises'], imageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=85', isActive: true },
+  { name: 'Forum Newton', building: 'Bâtiment B', floor: 0, capacity: 180, equipment: ['projecteur', 'wifi', 'tableau', 'prises', 'visioconférence'], imageUrl: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=85', isActive: true },
+  { name: 'Salle Orion', building: 'Bâtiment B', floor: 1, capacity: 30, equipment: ['wifi', 'tableau', 'prises'], imageUrl: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85', isActive: true },
+  { name: 'Salle Pixel', building: 'Bâtiment B', floor: 1, capacity: 54, equipment: ['projecteur', 'wifi', 'tableau'], imageUrl: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=85', isActive: true },
+  { name: 'Salle Quartz', building: 'Bâtiment B', floor: 2, capacity: 96, equipment: ['projecteur', 'wifi', 'prises', 'visioconférence'], imageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=85', isActive: true },
+  { name: 'Salle Rive', building: 'Bâtiment B', floor: 2, capacity: 18, equipment: ['wifi', 'tableau'], imageUrl: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=85', isActive: false },
+  { name: 'Salle Solaris', building: 'Bâtiment B', floor: 3, capacity: 42, equipment: ['projecteur', 'wifi', 'tableau', 'prises'], imageUrl: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85', isActive: true },
 ]
 
 function createPerfRooms(): (typeof rooms.$inferInsert)[] {
@@ -64,6 +64,7 @@ async function upsertRooms(roomValues: (typeof rooms.$inferInsert)[]) {
         floor: sql`excluded.floor`,
         capacity: sql`excluded.capacity`,
         equipment: sql`excluded.equipment`,
+        imageUrl: sql`excluded.image_url`,
         isActive: sql`excluded.is_active`,
       },
     })

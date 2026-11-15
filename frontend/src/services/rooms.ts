@@ -7,6 +7,7 @@ export interface Room {
   floor: number | null
   capacity: number
   equipment: string[]
+  image_url: string | null
 }
 
 export class RoomsRequestError extends Error {

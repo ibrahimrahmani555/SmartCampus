@@ -1,44 +1,52 @@
 <template>
   <main class="rooms-page">
-    <AppHeader />
-    <section class="rooms-content" aria-labelledby="rooms-title">
-      <div class="rooms-heading">
-        <p class="eyebrow">{{ roomsText.title }}</p>
-        <h1 id="rooms-title">{{ roomsText.title }}</h1>
-        <p class="subtitle">{{ roomsText.subtitle }}</p>
-      </div>
+    <AppSidebar />
+    <div class="rooms-main">
+      
+      <section class="rooms-content" aria-labelledby="rooms-title">
+        <div class="rooms-heading">
+          <p class="eyebrow">{{ roomsText.title }}</p>
+          <h1 id="rooms-title">{{ roomsText.title }}</h1>
+          <p class="subtitle">{{ roomsText.subtitle }}</p>
+        </div>
 
-      <p v-if="loading" class="state-message" role="status">{{ roomsText.loading }}</p>
-      <p v-else-if="errorMessage" class="state-message state-message--error" role="alert">
-        {{ errorMessage }}
-      </p>
-      <p v-else-if="rooms.length === 0" class="state-message">{{ roomsText.empty }}</p>
-      <div v-else class="rooms-grid">
-        <article v-for="room in rooms" :key="room.id" class="room-card">
-          <div class="room-card__topline">
-            <span class="room-card__building">{{ room.building }}</span>
-            <span v-if="room.floor !== null" class="room-card__floor">{{ roomsText.floor }} {{ room.floor }}</span>
-          </div>
-          <h2>{{ room.name }}</h2>
-          <p class="room-card__capacity">
-            {{ roomsText.capacity }} : {{ room.capacity }} {{ roomsText.seats }}
-          </p>
-          <div class="room-card__equipment">
-            <span class="room-card__label">{{ roomsText.equipment }}</span>
-            <ul v-if="room.equipment.length > 0">
-              <li v-for="equipment in room.equipment" :key="equipment">{{ equipment }}</li>
-            </ul>
-            <p v-else class="room-card__empty">{{ roomsText.noEquipment }}</p>
-          </div>
-        </article>
-      </div>
-    </section>
+        <p v-if="loading" class="state-message" role="status">{{ roomsText.loading }}</p>
+        <p v-else-if="errorMessage" class="state-message state-message--error" role="alert">
+          {{ errorMessage }}
+        </p>
+        <p v-else-if="rooms.length === 0" class="state-message">{{ roomsText.empty }}</p>
+        <div v-else class="rooms-grid">
+          <article v-for="room in rooms" :key="room.id" class="room-card">
+            <div class="room-card__image">
+              <img v-if="room.image_url" :src="room.image_url" :alt="room.name" loading="lazy" />
+              <span v-else aria-hidden="true"></span>
+            </div>
+            <div class="room-card__topline">
+              <span class="room-card__building">{{ room.building }}</span>
+              <span v-if="room.floor !== null" class="room-card__floor">{{ roomsText.floor }} {{ room.floor }}</span>
+            </div>
+            <h2>{{ room.name }}</h2>
+            <p class="room-card__capacity">
+              {{ roomsText.capacity }} : {{ room.capacity }} {{ roomsText.seats }}
+            </p>
+            <div class="room-card__equipment">
+              <span class="room-card__label">{{ roomsText.equipment }}</span>
+              <ul v-if="room.equipment.length > 0">
+                <li v-for="equipment in room.equipment" :key="equipment">{{ equipment }}</li>
+              </ul>
+              <p v-else class="room-card__empty">{{ roomsText.noEquipment }}</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
   </main>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import AppHeader from '../components/AppHeader.vue'
+import AppSidebar from '../components/AppSidebar.vue'
 import { roomsText } from '../constants/rooms'
 import { listRooms, RoomsRequestError, type Room } from '../services/rooms'
 
@@ -59,9 +67,15 @@ onMounted(async () => {
 
 <style scoped>
 .rooms-page {
+  display: flex;
   min-height: 100vh;
   background: var(--cream, #f8f6ed);
   color: var(--green, #173b32);
+}
+
+.rooms-main {
+  flex: 1;
+  min-width: 0;
 }
 
 .rooms-content {
@@ -109,6 +123,20 @@ h1 {
   border-radius: 18px;
   background: var(--surface, #fffdf7);
   box-shadow: 0 10px 24px #173b3210;
+}
+
+.room-card__image {
+  height: 150px;
+  margin: -22px -22px 18px;
+  overflow: hidden;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(150deg, #d9d7c8, #86947e);
+}
+
+.room-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .room-card__topline {
@@ -177,6 +205,13 @@ li {
 .state-message--error {
   border-color: var(--busy, #b85c52);
   color: var(--busy, #b85c52);
+}
+
+@media (max-width: 760px) {
+  .rooms-page {
+    display: block;
+  }
+
 }
 
 @media (max-width: 400px) {

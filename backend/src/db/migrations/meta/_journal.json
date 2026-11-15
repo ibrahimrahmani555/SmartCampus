@@ -43,6 +43,13 @@
       "when": 1792280300000,
       "tag": "0005_add_rooms",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792280400000,
+      "tag": "0006_add_room_image_url",
+      "breakpoints": true
     }
   ]
 }

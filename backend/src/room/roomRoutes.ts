@@ -13,6 +13,7 @@ function toRoomResponse(room: {
   floor: number | null
   capacity: number
   equipment: string[]
+  imageUrl: string | null
 }) {
   return {
     id: room.id,
@@ -21,6 +22,7 @@ function toRoomResponse(room: {
     floor: room.floor,
     capacity: room.capacity,
     equipment: room.equipment,
+    image_url: room.imageUrl,
   }
 }
 

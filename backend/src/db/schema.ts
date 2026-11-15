@@ -74,6 +74,7 @@ export const rooms = pgTable(
     floor: integer('floor'),
     capacity: integer('capacity').notNull(),
     equipment: text('equipment').array().notNull().default(sql`ARRAY[]::text[]`),
+    imageUrl: text('image_url'),
     isActive: boolean('is_active').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
