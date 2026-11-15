@@ -3,7 +3,6 @@
   <main>
     <section class="hero">
       <div class="hero-copy">
-        <span class="eyebrow"> Le campus, à votre rythme </span>
         <h1>
           Réservez votre salle
           <br />

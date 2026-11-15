@@ -7,6 +7,7 @@ import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { z } from 'zod'
 import { login } from './auth/loginService.js'
 import { confirmReset, PasswordResetError, requestReset } from './auth/passwordResetService.js'
+import { requirePermission } from './auth/permissions.js'
 import * as sessionRepository from './auth/sessionRepository.js'
 import { requireSession, sessionCookie } from './auth/sessionMiddleware.js'
 
@@ -104,6 +105,10 @@ app.post('/api/auth/logout', async (c) => {
 app.get('/api/auth/me', requireSession, (c) => {
   const user = c.get('user')
   return c.json({ email: user.email, role: user.role })
+})
+
+app.get('/api/auth/permissions/rooms', requireSession, requirePermission('rooms:read'), (c) => {
+  return c.json({ allowed: true })
 })
 
 const port = Number(process.env.PORT ?? 3000)

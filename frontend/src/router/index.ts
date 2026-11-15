@@ -4,7 +4,8 @@ import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import ForgotPasswordView from '../views/ForgotPasswordView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
-import { getCurrentUser } from '../services/auth'
+import { h } from 'vue'
+import { useAuth, type Permission } from '../composables/useAuth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,7 +26,12 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: DashboardView,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, permission: 'rooms:read' as Permission },
+    },
+    {
+      path: '/access-denied',
+      name: 'access-denied',
+      component: { render: () => h('main', 'Accès refusé.') },
     },
   ],
 })
@@ -33,8 +39,12 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   if (to.meta.requiresAuth !== true) return true
   try {
-    const user = await getCurrentUser()
-    return user ? true : { name: 'login' }
+    const auth = useAuth()
+    const user = await auth.refresh()
+    if (!user) return { name: 'login' }
+    return to.meta.permission && !auth.can(to.meta.permission as Permission)
+      ? { name: 'access-denied' }
+      : true
   } catch {
     return { name: 'login' }
   }
