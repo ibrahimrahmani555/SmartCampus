@@ -11,6 +11,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/db/seed.ts",
+    "seed:perf": "tsx src/db/seed.ts --perf",
+    "seed:perf:clean": "tsx src/db/seed.ts --clean-perf",
     "test": "vitest run"
   },
   "dependencies": {
