@@ -1,0 +1,41 @@
+import { and, eq, gt } from 'drizzle-orm'
+import { db } from '../db/index.js'
+import { sessions, users } from '../db/schema.js'
+
+export async function create(userId: string, expiresAt: Date) {
+  const [session] = await db.insert(sessions).values({ userId, expiresAt }).returning()
+  return session
+}
+
+export async function findActiveWithUser(id: string, now = new Date()) {
+  const [result] = await db
+    .select({ session: sessions, user: users })
+    .from(sessions)
+    .innerJoin(users, eq(sessions.userId, users.id))
+    .where(and(eq(sessions.id, id), gt(sessions.expiresAt, now), eq(users.status, 'active')))
+    .limit(1)
+
+  return result
+}
+
+export async function findWithUser(id: string) {
+  const [result] = await db
+    .select({ session: sessions, user: users })
+    .from(sessions)
+    .innerJoin(users, eq(sessions.userId, users.id))
+    .where(eq(sessions.id, id))
+    .limit(1)
+  return result
+}
+
+export async function extend(id: string, expiresAt: Date) {
+  await db.update(sessions).set({ expiresAt }).where(eq(sessions.id, id))
+}
+
+export async function remove(id: string) {
+  await db.delete(sessions).where(eq(sessions.id, id))
+}
+
+export async function removeAllForUser(userId: string) {
+  await db.delete(sessions).where(eq(sessions.userId, userId))
+}

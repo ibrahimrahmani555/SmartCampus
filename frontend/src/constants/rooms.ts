@@ -1,0 +1,15 @@
+export const roomsText = {
+  title: 'Salles',
+  subtitle: 'Consultez les espaces disponibles sur le campus.',
+  loading: 'Chargement des salles…',
+  empty: 'Aucune salle active n’est disponible pour le moment.',
+  error: 'Les salles ne peuvent pas être chargées pour le moment.',
+  unauthenticated: 'Veuillez vous connecter pour consulter les salles.',
+  forbidden: 'Vous n’avez pas l’autorisation de consulter les salles.',
+  building: 'Bâtiment',
+  floor: 'Étage',
+  capacity: 'Capacité',
+  seats: 'places',
+  equipment: 'Équipements',
+  noEquipment: 'Aucun équipement renseigné',
+} as const

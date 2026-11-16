@@ -1,0 +1,11 @@
+:root {
+  --green: #12351a;
+  --cream: #f4f6ec;
+  --yellow: #ffc700;
+  --gold: #c9b458;
+  --text: #1b1b1b;
+  --available: #2e8b57;
+  --busy: #c0392b;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Poppins', Arial, sans-serif;
+}

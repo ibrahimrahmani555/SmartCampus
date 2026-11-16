@@ -1,26 +1,25 @@
 import { mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import HomeView from './HomeView.vue'
 
 describe('HomeView', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals()
+  it('renders the reservation landing page without calling an API', () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const wrapper = mount(HomeView, { global: { stubs: { RouterLink: true } } })
+
+    expect(wrapper.text()).toContain('Réservez votre salle')
+    expect(wrapper.text()).toContain('Trouvez la salle idéale')
+    expect(wrapper.text()).toContain('Salles disponibles')
+    expect(wrapper.text()).toContain('Rechercher')
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('displays API OK when health endpoint returns ok', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ status: 'ok' }),
-      }),
-    )
+  it('changes the active how-it-works step on click', async () => {
+    const wrapper = mount(HomeView, { global: { stubs: { RouterLink: true } } })
 
-    const wrapper = mount(HomeView)
+    await wrapper.get('.step:nth-child(3)').trigger('click')
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
-    await wrapper.vm.$nextTick()
-
-    expect(wrapper.text()).toContain('API OK')
+    expect(wrapper.get('.how-detail-copy h3').text()).toBe('Réserver')
   })
 })
